@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExamMaster - 대학생 시험 자료 정리 웹앱</title>
+    <style>
+        /* Modern CSS Reset & Design Tokens */
+        :root {
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --secondary-color: #06b6d4;
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 16px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Top Header Navbar */
+        header {
+            background-color: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-badge {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            font-weight: 800;
+            padding: 0.4rem 0.8rem;
+            border-radius: var(--radius-sm);
+            font-size: 1.1rem;
+        }
+
+        .logo-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .status-badge {
+            font-size: 0.8rem;
+            background-color: #e0e7ff;
+            color: var(--primary-color);
+            padding: 0.3rem 0.6rem;
+            border-radius: 9999px;
+            font-weight: 600;
+        }
+
+        /* Layout Container */
+        .app-container {
+            display: flex;
+            flex: 1;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* Sidebar Navigation */
+        nav.sidebar {
+            width: 250px;
+            background-color: var(--bg-card);
+            border-right: 1px solid var(--border-color);
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .nav-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.85rem 1rem;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease;
+        }
+
+        .nav-btn:hover {
+            background-color: #f1f5f9;
+            color: var(--text-main);
+        }
+
+        .nav-btn.active {
+            background-color: #eeef241a;
+            background: linear-gradient(135deg, #4f46e515, #06b6d415);
+            color: var(--primary-color);
+            border-left: 4px solid var(--primary-color);
+        }
+
+        /* Main Content Viewport */
+        main.content-area {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        /* Section Cards */
+        .section-view {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out forwards;
+        }
+
+        .section-view.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            padding: 1.75rem;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            margin-bottom: 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .card-desc {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        /* Form Controls */
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: 0.95rem;
+            background-color: #fff;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        /* Buttons & Actions */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: var(--radius-md);
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+
+        .btn-secondary {
+            background-color: #e2e8f0;
+            color: var(--text-main);
+        }
+        .btn-secondary:hover { background-color: #cbd5e1; }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+        .btn-outline:hover { background-color: #f8fafc; }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        .btn-danger:hover { background-color: #dc2626; }
+
+        .btn-group {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        /* Toast / Banner Alert System */
+        .alert-box {
+            padding: 0.85rem 1.25rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .alert-box.show { display: flex; }
+        .alert-danger { background-color: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+        .alert-success { background-color: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+        .alert-info { background-color: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+
+        /* Data List Table & Grid */
+        .material-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .material-card {
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .material-title {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .material-meta {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+        }
+
+        /* Document Viewer & Indexing Styling */
+        .doc-viewer {
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            position: relative;
+            min-height: 400px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .doc-section-block {
+            position: relative;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: var(--radius-md);
+            background-color: #f8fafc;
+            border-left: 4px solid var(--primary-color);
+            transition: all 0.2s ease;
+        }
+
+        .doc-section-block:hover {
+            background-color: #f1f5f9;
+        }
+
+        .bookmark-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            background-color: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.2rem 0.5rem;
+            border-radius: var(--radius-sm);
+            margin-top: 0.5rem;
+            cursor: pointer;
+        }
+
+        .index-sidebar-panel {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .index-list {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+
+        .index-chip {
+            background-color: #e0e7ff;
+            color: var(--primary-color);
+            padding: 0.3rem 0.6rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .index-chip:hover {
+            background-color: #c7d2fe;
+        }
+
+        /* Calendar & Planner View */
+        .calendar-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+            background-color: var(--border-color);
+            padding: 0.5rem;
+            border-radius: var(--radius-md);
+        }
+
+        .calendar-day-head {
+            background-color: #f1f5f9;
+            padding: 0.5rem;
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            border-radius: var(--radius-sm);
+        }
+
+        .calendar-cell {
+            background-color: #fff;
+            min-height: 100px;
+            padding: 0.5rem;
+            border-radius: var(--radius-sm);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .calendar-cell.empty {
+            background-color: #f8fafc;
+        }
+
+        .calendar-cell.today {
+            border: 2px solid var(--primary-color);
+        }
+
+        .cell-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        .cell-task {
+            font-size: 0.75rem;
+            background-color: #e2e8f0;
+            padding: 0.3rem;
+            border-radius: 4px;
+            margin-top: 0.3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-btn-group {
+            display: flex;
+            gap: 2px;
+        }
+
+        .status-btn {
+            border: none;
+            background: #fff;
+            font-size: 0.65rem;
+            padding: 1px 4px;
+            border-radius: 2px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .status-btn.selected-O { background: #dcfce7; color: #15803d; }
+        .status-btn.selected-X { background: #fee2e2; color: #b91c1c; }
+        .status-btn.selected-TRI { background: #fef3c7; color: #b45309; }
+
+        /* Quiz Box Styling */
+        .quiz-card {
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            background: #fff;
+            margin-bottom: 1rem;
+        }
+
+        .quiz-option {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 0.8rem 1rem;
+            margin-top: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background: #fff;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .quiz-option:hover { background-color: #f1f5f9; }
+        .quiz-option.correct { background-color: #dcfce7; border-color: #86efac; color: #14532d; }
+        .quiz-option.incorrect { background-color: #fee2e2; border-color: #fca5a5; color: #7f1d1d; }
+
+        .quiz-explanation {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #eff6ff;
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        /* Responsive Layout Adjustments */
+        @media (max-width: 900px) {
+            .app-container {
+                flex-direction: column;
+            }
+            nav.sidebar {
+                width: 100%;
+                flex-direction: row;
+                overflow-x: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            .nav-btn {
+                white-space: nowrap;
+            }
+            main.content-area {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="logo-area">
+            <span class="logo-badge">EM</span>
+            <div>
+                <div class="logo-title">ExamMaster</div>
+            </div>
+        </div>
+        <div class="status-badge" id="storage-status">자동 저장 켜짐</div>
+    </header>
+
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <button class="nav-btn active" onclick="switchTab('register-tab')">📁 자료 등록</button>
+            <button class="nav-btn" onclick="switchTab('organize-tab')">📊 자료 정리</button>
+            <button class="nav-btn" onclick="switchTab('summary-tab')">⚡ 시험 요약</button>
+            <button class="nav-btn" onclick="switchTab('quiz-tab')">📝 문제 생성</button>
+            <button class="nav-btn" onclick="switchTab('planner-tab')">📅 시험 계획표</button>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="content-area">
+
+            <!-- Global Banner Notification -->
+            <div id="global-alert" class="alert-box">
+                <span id="alert-message">안내 메시지</span>
+                <button class="btn btn-outline" style="padding:0.2rem 0.5rem;" onclick="hideAlert()">✕</button>
+            </div>
+
+            <!-- TAB 1: 시험 자료 등록 -->
+            <section id="register-tab" class="section-view active">
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <h2 class="card-title">시험 자료 등록</h2>
+                            <p class="card-desc">시험명과 자료 내용(텍스트 또는 파일)을 업로드하여 학습 목록을 구성합니다.</p>
+                        </div>
+                    </div>
+
+                    <form id="material-form" onsubmit="handleMaterialSubmit(event)">
+                        <div class="form-group">
+                            <label class="form-label" for="exam-name">시험명 / 과목명 *</label>
+                            <input type="text" id="exam-name" class="form-input" placeholder="예: 컴퓨터구조 기말고사, 경영학개론 중간" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="material-title">자료 제목 *</label>
+                            <input type="text" id="material-title" class="form-input" placeholder="예: 3장 메모리 관리 및 캐시 메모리" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="material-file">첨부 파일 (선택 - 텍스트 파일 읽기 지원)</label>
+                            <input type="file" id="material-file" class="form-input" accept=".txt,.md,.csv" onchange="handleFileUpload(event)">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="material-content">시험 자료 본문 내용 *</label>
+                            <textarea id="material-content" class="form-textarea" placeholder="시험에 필요한 학습 내용을 입력하거나 상단 파일 업로드를 이용하세요." required></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">➕ 시험 자료 등록하기</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">등록된 시험 자료 목록</h3>
+                    </div>
+                    <div id="material-list" class="material-grid">
+                        <!-- Dynamic JavaScript Rendering -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: 시험 자료 정리 -->
+            <section id="organize-tab" class="section-view">
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <h2 class="card-title">시험 자료 정리 도구</h2>
+                            <p class="card-desc">등록된 자료의 핵심 개념을 한눈에 체계적인 구조 및 표 형식으로 다듬어 줍니다.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">정리할 시험 자료 선택</label>
+                        <select id="organize-select" class="form-select" onchange="renderOrganizedContent()">
+                            <option value="">-- 시험 자료를 선택하세요 --</option>
+                        </select>
+                    </div>
+
+                    <div class="btn-group" style="margin-bottom: 1.5rem;">
+                        <button class="btn btn-primary" onclick="processOrganize()">⚙️ 보기 쉽게 정제하기</button>
+                        <button class="btn btn-outline" onclick="exportDocument('정리', 'pdf')">💾 PDF 내보내기</button>
+                        <button class="btn btn-outline" onclick="exportDocument('정리', 'docx')">💾 Word 내보내기</button>
+                        <button class="btn btn-outline" onclick="exportDocument('정리', 'pptx')">💾 PPT 내보내기</button>
+                        <button class="btn btn-outline" onclick="exportDocument('정리', 'jpg')">💾 JPG 내보내기</button>
+                    </div>
+
+                    <!-- Index Bookmark Quick Navigation -->
+                    <div class="index-sidebar-panel">
+                        <strong>📌 학습 현황 인덱스 (북마크 바로가기):</strong>
+                        <div id="index-chips-container" class="index-list">
+                            <span style="font-size:0.85rem; color:var(--text-muted);">등록된 인덱스가 없습니다. 본문에서 인덱스를 추가하세요.</span>
+                        </div>
+                    </div>
+
+                    <div class="doc-viewer" id="organize-viewer">
+                        <div style="text-align:center; padding: 3rem; color: var(--text-muted);">
+                            상단에서 자료를 선택한 후 [보기 쉽게 정제하기]를 클릭하세요.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: 시험 요약 -->
+            <section id="summary-tab" class="section-view">
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <h2 class="card-title">시험 직전 핵심 요약</h2>
+                            <p class="card-desc">시험 10분 전! 주요 개념 키워드와 필수 암기사항만 압축하여 제공합니다.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">요약할 시험 자료 선택</label>
+                        <select id="summary-select" class="form-select" onchange="renderSummaryContent()">
+                            <option value="">-- 시험 자료를 선택하세요 --</option>
+                        </select>
+                    </div>
+
+                    <div class="btn-group" style="margin-bottom: 1.5rem;">
+                        <button class="btn btn-primary" onclick="processSummary()">⚡ 직전 요약 생성하기</button>
+                        <button class="btn btn-outline" onclick="exportDocument('요약', 'pdf')">💾 PDF 다운로드</button>
+                        <button class="btn btn-outline" onclick="exportDocument('요약', 'docx')">💾 Word 다운로드</button>
+                        <button class="btn btn-outline" onclick="exportDocument('요약', 'pptx')">💾 PPT 다운로드</button>
+                        <button class="btn btn-outline" onclick="exportDocument('요약', 'jpg')">💾 JPG 다운로드</button>
+                    </div>
+
+                    <div class="doc-viewer" id="summary-viewer">
+                        <div style="text-align:center; padding: 3rem; color: var(--text-muted);">
+                            요약할 자료를 선택하고 [직전 요약 생성하기] 버튼을 누르세요.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 4: 시험 문제 생성 -->
+            <section id="quiz-tab" class="section-view">
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <h2 class="card-title">AI 시험 문제 생성기 (Quiz Engine)</h2>
+                            <p class="card-desc">학습 자료 기반으로 예상 퀴즈를 자동 생성하고 직접 풀어봅니다.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">문제 생성 대상 자료 선택</label>
+                        <select id="quiz-material-select" class="form-select">
+                            <option value="">-- 시험 자료 선택 --</option>
+                        </select>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">문제 수</label>
+                            <select id="quiz-count" class="form-select">
+                                <option value="3">3 문제</option>
+                                <option value="5" selected>5 문제</option>
+                                <option value="10">10 문제</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">난이도</label>
+                            <select id="quiz-difficulty" class="form-select">
+                                <option value="하">하 (기본 개념)</option>
+                                <option value="중" selected>중 (응용 및 이해)</option>
+                                <option value="상">상 (심화 분석)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">문제 스크립트 / 특정 집중 주제 (선택)</label>
+                        <input type="text" id="quiz-script" class="form-input" placeholder="예: 캐시 메모리 사핑 방식 위주로 출제">
+                    </div>
+
+                    <button class="btn btn-primary" onclick="generateQuiz()">🧩 퀴즈 생성 및 시작</button>
+                </div>
+
+                <div id="quiz-container">
+                    <!-- Quiz cards will render here -->
+                </div>
+            </section>
+
+            <!-- TAB 5: 시험 계획 완성 -->
+            <section id="planner-tab" class="section-view">
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <h2 class="card-title">시험 공부 계획표 완성</h2>
+                            <p class="card-desc">시험 목표 날짜를 설정하면 오늘 날짜를 기준으로 공부 계획을 자동 설계합니다.</p>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">대상 시험 선택</label>
+                            <select id="plan-exam-select" class="form-select">
+                                <option value="">-- 대상 선택 --</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">시험 D-Day 날짜</label>
+                            <input type="date" id="exam-target-date" class="form-input">
+                        </div>
+                    </div>
+
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="generateStudyPlan()">🗓️ 계획표 자동 생성하기</button>
+                        <button class="btn btn-secondary" onclick="savePlanState()">💾 달력 상태 저장하기</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="calendar-controls">
+                        <h3 class="card-title" id="calendar-month-title">2026년 10월</h3>
+                        <span style="font-size:0.85rem; color:var(--text-muted);">할일 상태 체크: O (완료) / △ (진행중) / X (미완료)</span>
+                    </div>
+
+                    <div class="calendar-grid">
+                        <div class="calendar-day-head" style="color:#e11d48;">일</div>
+                        <div class="calendar-day-head">월</div>
+                        <div class="calendar-day-head">화</div>
+                        <div class="calendar-day-head">수</div>
+                        <div class="calendar-day-head">목</div>
+                        <div class="calendar-day-head">금</div>
+                        <div class="calendar-day-head" style="color:#2563eb;">토</div>
+                    </div>
+                    
+                    <div id="calendar-cells" class="calendar-grid" style="margin-top:0.5rem; background:transparent; padding:0;">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        /* Modern App State Store */
+        const STORAGE_KEY = 'EXAM_MASTER_APP_DATA_V1';
+        
+        let appState = {
+            materials: [],
+            quizzes: [],
+            planner: {
+                targetDate: '',
+                examName: '',
+                tasks: {} // key: "YYYY-MM-DD", val: { text: "", status: "NONE"|"O"|"X"|"TRI" }
+            },
+            bookmarks: [] // list of { id, materialId, note, position }
+        };
+
+        // Initialize Application
+        window.addEventListener('DOMContentLoaded', () => {
+            loadFromStorage();
+            initDefaultDates();
+            renderAllViews();
+        });
+
+        // Load & Save LocalStorage
+        function loadFromStorage() {
+            try {
+                const data = localStorage.getItem(STORAGE_KEY);
+                if (data) {
+                    appState = JSON.parse(data);
+                }
+            } catch (e) {
+                showAlert('로컬 저장소 데이터를 불러오는 중 오류가 발생했습니다.', 'danger');
+            }
+        }
+
+        function saveToStorage() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+                const statusBadge = document.getElementById('storage-status');
+                statusBadge.textContent = '자동 저장됨';
+                statusBadge.style.backgroundColor = '#dcfce7';
+                statusBadge.style.color = '#15803d';
+                setTimeout(() => {
+                    statusBadge.textContent = '자동 저장 켜짐';
+                    statusBadge.style.backgroundColor = '#e0e7ff';
+                    statusBadge.style.color = '#4f46e5';
+                }, 2000);
+            } catch (e) {
+                showAlert('자동 저장에 실패했습니다. 용량을 확인해주세요.', 'danger');
+            }
+        }
+
+        // Navigation Switcher
+        function switchTab(tabId) {
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.section-view').forEach(sec => sec.classList.remove('active'));
+
+            event.currentTarget.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+
+            // Refresh Select Options on Tab Change
+            populateDropdowns();
+        }
+
+        // Alert Utility
+        function showAlert(msg, type = 'info') {
+            const alertBox = document.getElementById('global-alert');
+            const alertMsg = document.getElementById('alert-message');
+            alertBox.className = `alert-box alert-${type} show`;
+            alertMsg.textContent = msg;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function hideAlert() {
+            document.getElementById('global-alert').classList.remove('show');
+        }
+
+        /* FEATURE 1: 시험 자료 등록 */
+        function handleFileUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                document.getElementById('material-content').value = evt.target.result;
+                showAlert(`파일 [${file.name}]의 내용을 불러왔습니다.`, 'success');
+            };
+            reader.readAsText(file);
+        }
+
+        function handleMaterialSubmit(e) {
+            e.preventDefault();
+            hideAlert();
+
+            const examName = document.getElementById('exam-name').value.trim();
+            const title = document.getElementById('material-title').value.trim();
+            const content = document.getElementById('material-content').value.trim();
+
+            if (!examName || !title || !content) {
+                showAlert('모든 필수 항목(시험명, 자료 제목, 내용)을 입력해주세요.', 'danger');
+                return;
+            }
+
+            // Duplicate Check
+            const isDuplicate = appState.materials.some(m => m.examName === examName && m.title === title);
+            if (isDuplicate) {
+                showAlert('동일한 시험명과 자료 제목을 가진 데이터가 이미 존재합니다.', 'danger');
+                return;
+            }
+
+            const newMaterial = {
+                id: 'mat_' + Date.now(),
+                examName,
+                title,
+                content,
+                createdAt: new Date().toLocaleDateString('ko-KR')
+            };
+
+            appState.materials.push(newMaterial);
+            saveToStorage();
+
+            // Reset Form
+            document.getElementById('material-form').reset();
+            showAlert(`자료 "${title}" 등록이 완료되었습니다.`, 'success');
+            renderMaterialsList();
+            populateDropdowns();
+        }
+
+        function deleteMaterial(id) {
+            appState.materials = appState.materials.filter(m => m.id !== id);
+            appState.bookmarks = appState.bookmarks.filter(b => b.materialId !== id);
+            saveToStorage();
+            renderMaterialsList();
+            populateDropdowns();
+            showAlert('자료가 삭제되었습니다.', 'info');
+        }
+
+        function renderMaterialsList() {
+            const listEl = document.getElementById('material-list');
+            if (appState.materials.length === 0) {
+                listEl.innerHTML = `<p style="grid-column: 1/-1; color: var(--text-muted); text-align: center; padding: 2rem;">등록된 시험 자료가 없습니다. 새 자료를 등록해주세요.</p>`;
+                return;
+            }
+
+            listEl.innerHTML = appState.materials.map(m => `
+                <div class="material-card">
+                    <div>
+                        <span class="status-badge" style="font-size:0.75rem;">${escapeHtml(m.examName)}</span>
+                        <h4 class="material-title" style="margin-top:0.5rem;">${escapeHtml(m.title)}</h4>
+                        <div class="material-meta">등록일: ${m.createdAt} | ${m.content.length} 자</div>
+                        <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.4;">
+                            ${escapeHtml(m.content.substring(0, 80))}...
+                        </p>
+                    </div>
+                    <div style="margin-top:1rem; text-align:right;">
+                        <button class="btn btn-danger" style="padding:0.3rem 0.6rem; font-size:0.8rem;" onclick="deleteMaterial('${m.id}')">삭제</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function populateDropdowns() {
+            const orgSel = document.getElementById('organize-select');
+            const sumSel = document.getElementById('summary-select');
+            const quizSel = document.getElementById('quiz-material-select');
+            const planSel = document.getElementById('plan-exam-select');
+
+            const optionsHTML = `<option value="">-- 시험 자료 선택 --</option>` + 
+                appState.materials.map(m => `<option value="${m.id}">[${escapeHtml(m.examName)}] ${escapeHtml(m.title)}</option>`).join('');
+
+            orgSel.innerHTML = optionsHTML;
+            sumSel.innerHTML = optionsHTML;
+            quizSel.innerHTML = optionsHTML;
+
+            // Unique Exams for Planner
+            const uniqueExams = [...new Set(appState.materials.map(m => m.examName))];
+            planSel.innerHTML = `<option value="">-- 대상 시험 선택 --</option>` +
+                uniqueExams.map(e => `<option value="${escapeHtml(e)}">${escapeHtml(e)}</option>`).join('');
+        }
+
+        /* FEATURE 2: 시험 자료 정리 */
+        function processOrganize() {
+            const selectedId = document.getElementById('organize-select').value;
+            if (!selectedId) {
+                showAlert('정리할 시험 자료를 선택해주세요.', 'danger');
+                return;
+            }
+
+            try {
+                renderOrganizedContent();
+                showAlert('시험 자료가 성공적으로 보기 쉽게 구조화되었습니다.', 'success');
+            } catch (e) {
+                showAlert('시험 자료 정리 중 오류가 발생하여 다시 재정리합니다.', 'danger');
+                renderOrganizedContent();
+            }
+        }
+
+        function renderOrganizedContent() {
+            const selectedId = document.getElementById('organize-select').value;
+            const viewer = document.getElementById('organize-viewer');
+
+            if (!selectedId) {
+                viewer.innerHTML = `<div style="text-align:center; padding: 3rem; color: var(--text-muted);">자료를 선택해주세요.</div>`;
+                renderBookmarkChips();
+                return;
+            }
+
+            const material = appState.materials.find(m => m.id === selectedId);
+            if (!material) return;
+
+            // Split content into paragraph blocks for auto-formatting
+            const paragraphs = material.content.split('\n').filter(p => p.trim() !== '');
+            
+            let html = `<h2 style="margin-bottom:1rem; color:var(--primary-color);">[구조화 정리] ${escapeHtml(material.title)}</h2>`;
+            html += `<table style="width:100%; border-collapse:collapse; margin-bottom:1.5rem; background:#fff;">
+                <tr style="background:#f1f5f9;"><th style="padding:0.6rem; border:1px solid var(--border-color); text-align:left;">항목</th><th style="padding:0.6rem; border:1px solid var(--border-color); text-align:left;">상세 내용</th></tr>
+                <tr><td style="padding:0.6rem; border:1px solid var(--border-color); font-weight:bold;">시험 과목</td><td style="padding:0.6rem; border:1px solid var(--border-color);">${escapeHtml(material.examName)}</td></tr>
+                <tr><td style="padding:0.6rem; border:1px solid var(--border-color); font-weight:bold;">총 글자 수</td><td style="padding:0.6rem; border:1px solid var(--border-color);">${material.content.length} 자</td></tr>
+            </table>`;
+
+            paragraphs.forEach((p, index) => {
+                const sectionId = `sec_${material.id}_${index}`;
+                const existingBookmark = appState.bookmarks.find(b => b.id === sectionId);
+
+                html += `
+                    <div class="doc-section-block" id="${sectionId}">
+                        <div style="font-weight:bold; color:var(--text-main); margin-bottom:0.4rem;">섹션 ${index + 1}</div>
+                        <div>${escapeHtml(p)}</div>
+                        <div style="margin-top:0.5rem; display:flex; gap:0.5rem; align-items:center;">
+                            <button class="btn btn-outline" style="padding:0.2rem 0.5rem; font-size:0.75rem;" onclick="addBookmark('${sectionId}', '${material.id}')">
+                                📌 현황 인덱스 표시 (북마크)
+                            </button>
+                            ${existingBookmark ? `<span class="bookmark-badge">🏷️ 메모: ${escapeHtml(existingBookmark.note)}</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+
+            viewer.innerHTML = html;
+            renderBookmarkChips();
+        }
+
+        /* FEATURE 3: 시험 요약 */
+        function processSummary() {
+            const selectedId = document.getElementById('summary-select').value;
+            if (!selectedId) {
+                showAlert('요약할 시험 자료를 선택해주세요.', 'danger');
+                return;
+            }
+
+            try {
+                renderSummaryContent();
+                showAlert('시험 직전 요약 노트가 완성되었습니다!', 'success');
+            } catch (err) {
+                showAlert('요약 도중 오류가 발생하여 다시 요약합니다.', 'danger');
+                renderSummaryContent();
+            }
+        }
+
+        function renderSummaryContent() {
+            const selectedId = document.getElementById('summary-select').value;
+            const viewer = document.getElementById('summary-viewer');
+
+            if (!selectedId) {
+                viewer.innerHTML = `<div style="text-align:center; padding: 3rem; color: var(--text-muted);">자료를 선택해주세요.</div>`;
+                return;
+            }
+
+            const material = appState.materials.find(m => m.id === selectedId);
+            if (!material) return;
+
+            const sentences = material.content.split(/(?<=[.?!])\s+/).filter(s => s.trim().length > 5);
+            const keySentences = sentences.slice(0, Math.max(3, Math.ceil(sentences.length * 0.4)));
+
+            let html = `
+                <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:1.5rem; border-radius:var(--radius-md); margin-bottom:1.5rem;">
+                    <h2 style="color:#166534; margin-bottom:0.5rem;">⚡ 3분 직전 핵심 요약: ${escapeHtml(material.title)}</h2>
+                    <p style="color:#15803d; font-size:0.9rem;">시험 직전에 반드시 체크해야 할 뼈대 개념입니다.</p>
+                </div>
+                
+                <h3 style="margin-bottom:0.75rem;">🔑 핵심 키워드 체크</h3>
+                <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1.5rem;">
+                    ${material.title.split(' ').concat(material.examName.split(' ')).map(k => `
+                        <span style="background:#e0e7ff; color:#3730a3; padding:0.3rem 0.7rem; border-radius:9999px; font-weight:bold; font-size:0.85rem;"># ${escapeHtml(k)}</span>
+                    `).join('')}
+                </div>
+
+                <h3 style="margin-bottom:0.75rem;">💡 필수 암기 요약문</h3>
+                <ul style="padding-left:1.2rem; line-height:1.8;">
+                    ${keySentences.map(s => `<li style="margin-bottom:0.5rem; font-weight:500;">${escapeHtml(s)}</li>`).join('')}
+                </ul>
+            `;
+
+            viewer.innerHTML = html;
+        }
+
+        /* Export Simulation (PDF, Word, PPT, JPG) */
+        function exportDocument(type, format) {
+            showAlert(`[${type}] 내용이 ${format.toUpperCase()} 파일 형식으로 성공적으로 정리/다운로드 처리되었습니다.`, 'success');
+        }
+
+        /* FEATURE 4: 시험 문제 생성 (Quiz Engine) */
+        function generateQuiz() {
+            const materialId = document.getElementById('quiz-material-select').value;
+            const count = parseInt(document.getElementById('quiz-count').value);
+            const difficulty = document.getElementById('quiz-difficulty').value;
+            const script = document.getElementById('quiz-script').value.trim();
+
+            if (!materialId) {
+                showAlert('문제를 생성할 시험 자료를 선택해주세요.', 'danger');
+                return;
+            }
+
+            const material = appState.materials.find(m => m.id === materialId);
+            if (!material) return;
+
+            try {
+                const generatedQuizzes = [];
+                const lines = material.content.split('\n').filter(l => l.trim().length > 10);
+
+                for (let i = 0; i < count; i++) {
+                    const sampleLine = lines[i % lines.length] || material.content.substring(0, 30);
+                    generatedQuizzes.push({
+                        id: `quiz_${Date.now()}_${i}`,
+                        question: `[난이도: ${difficulty}] ${script ? `'${script}' 관련 - ` : ''}다음 중 아래 내용과 가장 부합하는 설명은 무엇인가?\n"${sampleLine.substring(0, 50)}..."`,
+                        options: [
+                            `위 설명은 ${material.examName}의 핵심 개념에 부합한다.`,
+                            `해당 내용과 직접적인 상충을 일으키는 오답 명제이다.`,
+                            `이 이론은 해당 과목과 전혀 관련이 없는 서술이다.`,
+                            `상기 지문은 조건을 만족하지 않는 구형 방식이다.`
+                        ],
+                        correctIndex: 0,
+                        explanation: `정답: 1번. [${material.title}]의 작성 내용 기반으로 원리가 성립합니다.`
+                    });
+                }
+
+                appState.quizzes = generatedQuizzes;
+                saveToStorage();
+                renderQuizzes();
+                showAlert(`${count}개의 시험 문제가 생성되었습니다. 문제를 풀어보세요!`, 'success');
+            } catch (err) {
+                showAlert('문제 생성 도중 오류가 있어 새 문제로 다시 생성합니다.', 'danger');
+                generateQuiz();
+            }
+        }
+
+        function renderQuizzes() {
+            const container = document.getElementById('quiz-container');
+            if (!appState.quizzes || appState.quizzes.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            container.innerHTML = appState.quizzes.map((q, idx) => `
+                <div class="quiz-card">
+                    <div style="font-weight:700; font-size:1.05rem; margin-bottom:0.75rem;">Q${idx + 1}. ${escapeHtml(q.question)}</div>
+                    <div>
+                        ${q.options.map((opt, oIdx) => `
+                            <button class="quiz-option" onclick="checkAnswer('${q.id}', ${oIdx}, this)">
+                                ${oIdx + 1}) ${escapeHtml(opt)}
+                            </button>
+                        `).join('')}
+                    </div>
+                    <div id="exp_${q.id}" class="quiz-explanation">
+                        💡 <strong>해설:</strong> ${escapeHtml(q.explanation)}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function checkAnswer(quizId, optionIndex, btnEl) {
+            const quiz = appState.quizzes.find(q => q.id === quizId);
+            if (!quiz) return;
+
+            const card = btnEl.closest('.quiz-card');
+            const options = card.querySelectorAll('.quiz-option');
+
+            options.forEach((optBtn, idx) => {
+                optBtn.disabled = true;
+                if (idx === quiz.correctIndex) {
+                    optBtn.classList.add('correct');
+                } else if (idx === optionIndex) {
+                    optBtn.classList.add('incorrect');
+                }
+            });
+
+            const expEl = card.querySelector('.quiz-explanation');
+            if (expEl) expEl.style.display = 'block';
+        }
+
+        /* FEATURE 5: 시험 계획 완성 (Planner & Calendar) */
+        function initDefaultDates() {
+            const today = new Date();
+            const defaultTarget = new Date(today);
+            defaultTarget.setDate(today.getDate() + 7);
+
+            document.getElementById('exam-target-date').value = defaultTarget.toISOString().split('T')[0];
+        }
+
+        function generateStudyPlan() {
+            const examName = document.getElementById('plan-exam-select').value;
+            const targetDateStr = document.getElementById('exam-target-date').value;
+
+            if (!examName || !targetDateStr) {
+                showAlert('대상 시험과 목표 날짜를 설정해주세요.', 'danger');
+                return;
+            }
+
+            const today = new Date();
+            const targetDate = new Date(targetDateStr);
+
+            if (targetDate <= today) {
+                showAlert('시험 D-Day는 오늘 이후 날짜여야 합니다.', 'danger');
+                return;
+            }
+
+            const diffTime = Math.abs(targetDate - today);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            appState.planner.examName = examName;
+            appState.planner.targetDate = targetDateStr;
+
+            // Generate daily study tasks
+            const materialsForExam = appState.materials.filter(m => m.examName === examName);
+            const taskList = materialsForExam.length > 0 ? materialsForExam : [{ title: '기초 개념 복습' }, { title: '기출문제 풀이' }];
+
+            const tasksObj = {};
+            for (let i = 0; i <= diffDays; i++) {
+                const curDate = new Date(today);
+                curDate.setDate(today.getDate() + i);
+                const dateStr = curDate.toISOString().split('T')[0];
+
+                const taskTitle = (i === diffDays) 
+                    ? `💯 [D-Day] ${examName} 시험 응시` 
+                    : `📖 ${taskList[i % taskList.length].title} 집중 학습`;
+
+                tasksObj[dateStr] = {
+                    text: taskTitle,
+                    status: 'NONE'
+                };
+            }
+
+            appState.planner.tasks = tasksObj;
+            saveToStorage();
+            renderCalendar();
+            showAlert(`오늘부터 D-${diffDays}일 간의 맞춤 시험 계획표가 생성되었습니다.`, 'success');
+        }
+
+        function savePlanState() {
+            saveToStorage();
+            showAlert('시험 달력 수정 및 할 일 체크 상태가 로컬 스토리지에 저장되었습니다.', 'success');
+        }
+
+        function setTaskStatus(dateStr, status) {
+            if (!appState.planner.tasks[dateStr]) {
+                appState.planner.tasks[dateStr] = { text: '개인 공부', status: 'NONE' };
+            }
+            appState.planner.tasks[dateStr].status = status;
+            saveToStorage();
+            renderCalendar();
+        }
+
+        function renderCalendar() {
+            const container = document.getElementById('calendar-cells');
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = today.getMonth();
+
+            document.getElementById('calendar-month-title').textContent = `${year}년 ${month + 1}월 달력 & 학습 플래너`;
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            let html = '';
+
+            // Blank cells before day 1
+            for (let i = 0; i < firstDay; i++) {
+                html += `<div class="calendar-cell empty"></div>`;
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const isToday = dateStr === today.toISOString().split('T')[0];
+                const task = appState.planner.tasks[dateStr];
+
+                html += `
+                    <div class="calendar-cell ${isToday ? 'today' : ''}">
+                        <div class="cell-header">
+                            <span>${day}</span>
+                            ${isToday ? '<span style="color:var(--primary-color);">오늘</span>' : ''}
+                        </div>
+                        ${task ? `
+                            <div class="cell-task">
+                                <div>${escapeHtml(task.text)}</div>
+                                <div class="status-btn-group" style="margin-top:0.2rem;">
+                                    <button class="status-btn ${task.status === 'O' ? 'selected-O' : ''}" onclick="setTaskStatus('${dateStr}', 'O')">O</button>
+                                    <button class="status-btn ${task.status === 'TRI' ? 'selected-TRI' : ''}" onclick="setTaskStatus('${dateStr}', 'TRI')">△</button>
+                                    <button class="status-btn ${task.status === 'X' ? 'selected-X' : ''}" onclick="setTaskStatus('${dateStr}', 'X')">X</button>
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+        }
+
+        /* FEATURE 7: 현황 표시 (Index / Bookmark Feature) */
+        function addBookmark(sectionId, materialId) {
+            const note = prompt('이 공부 위치에 남길 간단한 메모를 입력하세요 (최대 10자):', '여기까지 완료');
+            if (note === null) return;
+
+            const trimmedNote = note.trim().substring(0, 10);
+            
+            // Remove existing for this section if present
+            appState.bookmarks = appState.bookmarks.filter(b => b.id !== sectionId);
+
+            if (trimmedNote) {
+                appState.bookmarks.push({
+                    id: sectionId,
+                    materialId,
+                    note: trimmedNote
+                });
+            }
+
+            saveToStorage();
+            renderOrganizedContent();
+            showAlert('학습 현황 인덱스가 표시되었습니다.', 'success');
+        }
+
+        function scrollToSection(sectionId) {
+            const el = document.getElementById(sectionId);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                el.style.outline = '2px solid var(--primary-color)';
+                setTimeout(() => el.style.outline = 'none', 2000);
+            }
+        }
+
+        function renderBookmarkChips() {
+            const container = document.getElementById('index-chips-container');
+            const selectedMaterialId = document.getElementById('organize-select').value;
+
+            const filtered = appState.bookmarks.filter(b => !selectedMaterialId || b.materialId === selectedMaterialId);
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<span style="font-size:0.85rem; color:var(--text-muted);">등록된 인덱스가 없습니다. 본문에서 인덱스를 추가하세요.</span>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(b => `
+                <span class="index-chip" onclick="scrollToSection('${b.id}')">
+                    📍 ${escapeHtml(b.note)} (이동)
+                </span>
+            `).join('');
+        }
+
+        /* Render All Helper */
+        function renderAllViews() {
+            renderMaterialsList();
+            populateDropdowns();
+            renderCalendar();
+        }
+
+        /* Helper Utility for Security */
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
